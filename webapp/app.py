@@ -4,7 +4,6 @@ import threading
 import uuid
 
 from flask import Flask, abort, jsonify, render_template, request, send_from_directory
-from werkzeug.utils import secure_filename
 import yt_dlp
 
 app = Flask(__name__)
@@ -17,25 +16,8 @@ URL_RE = re.compile(r"^https?://", re.IGNORECASE)
 jobs = {}
 
 
-def sanitize_subfolder(raw):
-    """Turn user input into a safe relative path under DOWNLOAD_DIR (no traversal)."""
-    if not raw:
-        return ""
-    parts = []
-    for part in raw.replace("\\", "/").split("/"):
-        part = part.strip()
-        if not part or part in (".", ".."):
-            continue
-        safe = secure_filename(part)
-        if safe:
-            parts.append(safe)
-    return os.path.join(*parts) if parts else ""
-
-
-def run_download(job_id, url, subfolder):
+def run_download(job_id, url):
     job = jobs[job_id]
-    target_dir = os.path.join(DOWNLOAD_DIR, subfolder) if subfolder else DOWNLOAD_DIR
-    os.makedirs(target_dir, exist_ok=True)
 
     def progress_hook(d):
         if d["status"] == "downloading":
@@ -56,7 +38,7 @@ def run_download(job_id, url, subfolder):
         "format": "bv*[ext=mp4][vcodec^=avc1]+ba[ext=m4a]/b[ext=mp4]",
         "merge_output_format": "mp4",
         "restrictfilenames": True,
-        "outtmpl": os.path.join(target_dir, "%(title).120s.%(ext)s"),
+        "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).120s.%(ext)s"),
         "noplaylist": True,
         "progress_hooks": [progress_hook],
         "postprocessor_hooks": [postprocessor_hook],
@@ -79,16 +61,6 @@ def run_download(job_id, url, subfolder):
 @app.route("/")
 def index():
     return render_template("index.html")
-
-
-@app.route("/api/folders")
-def list_folders():
-    folders = [
-        name
-        for name in sorted(os.listdir(DOWNLOAD_DIR))
-        if not name.startswith(".") and os.path.isdir(os.path.join(DOWNLOAD_DIR, name))
-    ]
-    return jsonify(folders)
 
 
 @app.route("/api/preview", methods=["POST"])
@@ -124,7 +96,6 @@ def preview():
 def start_download():
     data = request.get_json(force=True, silent=True) or {}
     url = (data.get("url") or "").strip()
-    subfolder = sanitize_subfolder((data.get("folder") or "").strip())
 
     if not url or not URL_RE.match(url):
         return jsonify({"error": "Please enter a valid http(s) URL"}), 400
@@ -132,7 +103,7 @@ def start_download():
     job_id = uuid.uuid4().hex
     jobs[job_id] = {"status": "starting", "progress": 0}
 
-    thread = threading.Thread(target=run_download, args=(job_id, url, subfolder), daemon=True)
+    thread = threading.Thread(target=run_download, args=(job_id, url), daemon=True)
     thread.start()
 
     return jsonify({"job_id": job_id})

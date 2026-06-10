@@ -1,4 +1,7 @@
-# Downloaded media
+# ===================================
+# Downloaded videos & audio
+# (these are created when you use the app — don't commit them)
+# ===================================
 *.mp4
 *.m4a
 *.m4v
@@ -11,16 +14,23 @@
 *.part
 *.ytdl
 
-# Subtitles
+# ===================================
+# Downloaded subtitles
+# ===================================
 *.srt
 *.vtt
 *.ttml
 *.sbv
 
-# OS / Editor
+# ===================================
+# Editor / OS clutter files
+# ===================================
+.vscode/
+.idea/
 .DS_Store
-.vscode
-.idea
+Thumbs.db
 
-# Web GUI download folder
-/downloads/
+# ===================================
+# Claude Code project files (local assistant settings, not for git)
+# ===================================
+.claude/

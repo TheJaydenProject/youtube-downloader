@@ -8,59 +8,61 @@
 </head>
 <body>
   <main class="page">
-    <div class="header">
-      <div class="logo">🎬</div>
-      <h1>Video Downloader</h1>
-      <p class="subtitle">Paste a link, pick a folder, and download.</p>
-    </div>
+    <header class="masthead">
+      <span class="tally-light" aria-hidden="true"></span>
+      <div>
+        <h1>Video Downloader</h1>
+        <p class="subtitle">Paste a link, capture the file.</p>
+      </div>
+    </header>
 
     <div class="card">
       <form id="download-form">
-        <label class="field-label" for="url-input">Video URL</label>
-        <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." required>
+        <label class="field-label" for="url-input">Source URL</label>
+        <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." required autocomplete="off">
 
         <div id="preview" class="preview hidden">
-          <img id="preview-thumb" class="preview-thumb" alt="">
+          <div class="preview-frame">
+            <img id="preview-thumb" class="preview-thumb" alt="">
+          </div>
           <div class="preview-info">
             <p id="preview-title" class="preview-title"></p>
             <p id="preview-meta" class="preview-meta"></p>
           </div>
         </div>
-        <p id="preview-loading" class="preview-loading hidden">Loading preview...</p>
+        <p id="preview-loading" class="preview-loading hidden">Reading metadata&hellip;</p>
 
-        <label class="field-label">Save to</label>
-        <div class="folder-picker">
-          <button type="button" id="folder-btn" class="folder-btn">
-            <span class="folder-icon">📁</span>
-            <span id="folder-label">Default (downloads)</span>
-            <span class="chevron">▾</span>
-          </button>
-          <div id="folder-menu" class="folder-menu hidden">
-            <button type="button" class="folder-option" data-folder="">📁 Default (downloads)</button>
-            <div id="folder-list"></div>
-            <div class="folder-new">
-              <input type="text" id="new-folder-input" placeholder="New folder name">
-              <button type="button" id="new-folder-btn">Add</button>
-            </div>
-          </div>
-        </div>
-
-        <button type="submit" class="primary-btn">Download</button>
+        <button type="submit" class="primary-btn">
+          <span class="rec-dot" aria-hidden="true"></span>
+          Download
+        </button>
       </form>
 
       <div id="progress-container" class="hidden">
         <div class="progress-bar">
           <div id="progress-fill" class="progress-fill"></div>
         </div>
-        <p id="status-text">Starting...</p>
+        <p id="status-text" class="status-text">Starting&hellip;</p>
       </div>
 
       <div id="result" class="hidden">
-        <a id="download-link" class="success-btn" href="#">⬇ Save File</a>
+        <div class="saved-panel">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+          <div>
+            <p class="saved-label">Saved to</p>
+            <p id="saved-path" class="saved-path"></p>
+          </div>
+        </div>
+        <a id="download-link" class="copy-link" href="#">Didn't download automatically? Click here</a>
       </div>
 
-      <div id="error" class="hidden error-msg"></div>
+      <div id="error" class="hidden error-msg">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.86 1.82 18a1 1 0 0 0 .86 1.5h18.64a1 1 0 0 0 .86-1.5L13.7 3.86a1 1 0 0 0-1.72 0Z"/></svg>
+        <span id="error-text"></span>
+      </div>
     </div>
+
+    <p class="footnote">Files are saved to <code>downloads/</code> on your machine</p>
   </main>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
