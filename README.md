@@ -15,6 +15,7 @@ Everything (Python, yt-dlp, ffmpeg) runs inside Docker, so nothing needs to be i
 ## Features
 
 - Web interface — paste a link and download, no command line required
+- Queue multiple links and download them one after another
 - Progress bar during download
 - Preview (thumbnail, title, duration) before downloading
 - Output saved as MP4
@@ -43,8 +44,10 @@ The first run takes a little longer, since Docker needs to build the image. Subs
 ## Using the web interface
 
 1. Paste a video URL into the input field. A preview (thumbnail, title, and duration) appears once it's recognized.
-2. Click **Download** and wait for the progress bar to complete.
-3. Once finished, the browser automatically downloads the file (to your browser's normal downloads location). If it doesn't start automatically, a link is provided to trigger it manually.
+2. To download more than one video, click **Add another link** and paste additional URLs.
+3. Click **Download**. Videos are downloaded one at a time; the progress bar shows which one is currently downloading.
+4. As each video finishes, the browser automatically downloads it (to your browser's normal downloads location).
+5. Once everything is done, click **Download another** to clear the form and start again.
 
 ---
 
@@ -96,8 +99,6 @@ docker run --rm -v "${PWD}/downloads:/downloads" yt-dlp:local --newline -f "bv*[
 ```
 
 Replace `"yt-link"` with the URL of the video to download.
-
-> **Windows + Git Bash:** prefix the command with `MSYS_NO_PATHCONV=1`, e.g. `MSYS_NO_PATHCONV=1 docker run ...`. Without it, Git Bash rewrites the `/downloads` paths and the file ends up somewhere unexpected. PowerShell and Command Prompt don't need this.
 
 ### What this command does
 

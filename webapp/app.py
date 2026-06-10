@@ -1,4 +1,5 @@
 import os
+import queue
 import re
 import threading
 import uuid
@@ -14,10 +15,12 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 URL_RE = re.compile(r"^https?://", re.IGNORECASE)
 
 jobs = {}
+job_queue = queue.Queue()
 
 
 def run_download(job_id, url):
     job = jobs[job_id]
+    job["status"] = "starting"
 
     def progress_hook(d):
         if d["status"] == "downloading":
@@ -49,6 +52,7 @@ def run_download(job_id, url):
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
+            job["title"] = info.get("title")
             if "filename" not in job:
                 job["filename"] = os.path.relpath(ydl.prepare_filename(info), DOWNLOAD_DIR)
             job["status"] = "finished"
@@ -56,6 +60,16 @@ def run_download(job_id, url):
     except Exception as e:
         job["status"] = "error"
         job["error"] = str(e)
+
+
+def worker():
+    while True:
+        job_id, url = job_queue.get()
+        run_download(job_id, url)
+        job_queue.task_done()
+
+
+threading.Thread(target=worker, daemon=True).start()
 
 
 @app.route("/")
@@ -95,18 +109,27 @@ def preview():
 @app.route("/api/download", methods=["POST"])
 def start_download():
     data = request.get_json(force=True, silent=True) or {}
-    url = (data.get("url") or "").strip()
+    urls = data.get("urls")
 
-    if not url or not URL_RE.match(url):
-        return jsonify({"error": "Please enter a valid http(s) URL"}), 400
+    if not isinstance(urls, list):
+        return jsonify({"error": "Please provide a list of URLs"}), 400
 
-    job_id = uuid.uuid4().hex
-    jobs[job_id] = {"status": "starting", "progress": 0}
+    urls = [u.strip() for u in urls if isinstance(u, str) and u.strip()]
 
-    thread = threading.Thread(target=run_download, args=(job_id, url), daemon=True)
-    thread.start()
+    if not urls:
+        return jsonify({"error": "Please enter at least one valid URL"}), 400
 
-    return jsonify({"job_id": job_id})
+    if any(not URL_RE.match(u) for u in urls):
+        return jsonify({"error": "Please enter valid http(s) URLs"}), 400
+
+    job_ids = []
+    for url in urls:
+        job_id = uuid.uuid4().hex
+        jobs[job_id] = {"status": "queued", "progress": 0}
+        job_queue.put((job_id, url))
+        job_ids.append(job_id)
+
+    return jsonify({"job_ids": job_ids})
 
 
 @app.route("/api/status/<job_id>")

@@ -18,19 +18,13 @@
 
     <div class="card">
       <form id="download-form">
-        <label class="field-label" for="url-input">Source URL</label>
-        <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." required autocomplete="off">
+        <span class="field-label">Source URL</span>
+        <div id="url-rows"></div>
 
-        <div id="preview" class="preview hidden">
-          <div class="preview-frame">
-            <img id="preview-thumb" class="preview-thumb" alt="">
-          </div>
-          <div class="preview-info">
-            <p id="preview-title" class="preview-title"></p>
-            <p id="preview-meta" class="preview-meta"></p>
-          </div>
-        </div>
-        <p id="preview-loading" class="preview-loading hidden">Reading metadata&hellip;</p>
+        <button type="button" id="add-row-btn" class="add-row-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add another link
+        </button>
 
         <button type="submit" class="primary-btn">
           <span class="rec-dot" aria-hidden="true"></span>
@@ -39,21 +33,18 @@
       </form>
 
       <div id="progress-container" class="hidden">
+        <p id="queue-position" class="queue-position"></p>
+        <p id="current-title" class="current-title"></p>
         <div class="progress-bar">
           <div id="progress-fill" class="progress-fill"></div>
         </div>
         <p id="status-text" class="status-text">Starting&hellip;</p>
       </div>
 
+      <div id="completed-list" class="hidden"></div>
+
       <div id="result" class="hidden">
-        <div class="saved-panel">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
-          <div>
-            <p class="saved-label">Saved to</p>
-            <p id="saved-path" class="saved-path"></p>
-          </div>
-        </div>
-        <a id="download-link" class="copy-link" href="#">Didn't download automatically? Click here</a>
+        <button type="button" id="another-btn" class="primary-btn">Download another</button>
       </div>
 
       <div id="error" class="hidden error-msg">
@@ -64,6 +55,37 @@
 
     <p class="footnote">Files are saved to <code>downloads/</code> on your machine</p>
   </main>
+
+  <template id="url-row-template">
+    <div class="url-row">
+      <div class="row-inputs">
+        <input type="url" class="url-input" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+        <button type="button" class="remove-row-btn hidden" aria-label="Remove link">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="preview hidden">
+        <div class="preview-frame">
+          <img class="preview-thumb" alt="">
+        </div>
+        <div class="preview-info">
+          <p class="preview-title"></p>
+          <p class="preview-meta"></p>
+        </div>
+      </div>
+      <p class="preview-loading hidden">Reading metadata&hellip;</p>
+    </div>
+  </template>
+
+  <template id="queue-item-template">
+    <div class="queue-item">
+      <svg class="icon queue-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></svg>
+      <div class="queue-item-text">
+        <p class="queue-item-title"></p>
+        <p class="queue-item-status"></p>
+      </div>
+    </div>
+  </template>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
