@@ -19,6 +19,15 @@
         <label class="field-label" for="url-input">Video URL</label>
         <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." required>
 
+        <div id="preview" class="preview hidden">
+          <img id="preview-thumb" class="preview-thumb" alt="">
+          <div class="preview-info">
+            <p id="preview-title" class="preview-title"></p>
+            <p id="preview-meta" class="preview-meta"></p>
+          </div>
+        </div>
+        <p id="preview-loading" class="preview-loading hidden">Loading preview...</p>
+
         <label class="field-label">Save to</label>
         <div class="folder-picker">
           <button type="button" id="folder-btn" class="folder-btn">

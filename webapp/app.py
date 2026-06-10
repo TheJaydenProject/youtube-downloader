@@ -91,6 +91,35 @@ def list_folders():
     return jsonify(folders)
 
 
+@app.route("/api/preview", methods=["POST"])
+def preview():
+    data = request.get_json(force=True, silent=True) or {}
+    url = (data.get("url") or "").strip()
+
+    if not url or not URL_RE.match(url):
+        return jsonify({"error": "Please enter a valid http(s) URL"}), 400
+
+    ydl_opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "skip_download": True,
+        "noplaylist": True,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 422
+
+    return jsonify({
+        "title": info.get("title"),
+        "thumbnail": info.get("thumbnail"),
+        "duration": info.get("duration"),
+        "uploader": info.get("uploader") or info.get("channel"),
+    })
+
+
 @app.route("/api/download", methods=["POST"])
 def start_download():
     data = request.get_json(force=True, silent=True) or {}
@@ -126,4 +155,4 @@ def file(job_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, threaded=True)

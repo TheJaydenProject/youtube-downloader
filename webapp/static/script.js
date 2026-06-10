@@ -1,5 +1,10 @@
 const form = document.getElementById("download-form");
 const urlInput = document.getElementById("url-input");
+const preview = document.getElementById("preview");
+const previewThumb = document.getElementById("preview-thumb");
+const previewTitle = document.getElementById("preview-title");
+const previewMeta = document.getElementById("preview-meta");
+const previewLoading = document.getElementById("preview-loading");
 const progressContainer = document.getElementById("progress-container");
 const progressFill = document.getElementById("progress-fill");
 const statusText = document.getElementById("status-text");
@@ -76,6 +81,73 @@ document.addEventListener("click", (e) => {
 });
 
 loadFolders();
+
+// ---------- Link preview ----------
+
+const URL_RE = /^https?:\/\//i;
+let previewTimer = null;
+let previewRequestId = 0;
+
+function formatDuration(seconds) {
+  if (!seconds && seconds !== 0) return "";
+  seconds = Math.round(seconds);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+function hidePreview() {
+  preview.classList.add("hidden");
+  previewLoading.classList.add("hidden");
+}
+
+async function fetchPreview(url) {
+  const requestId = ++previewRequestId;
+  previewLoading.classList.remove("hidden");
+  preview.classList.add("hidden");
+
+  try {
+    const res = await fetch("/api/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json();
+
+    if (requestId !== previewRequestId) return; // stale response
+
+    if (!res.ok) {
+      hidePreview();
+      return;
+    }
+
+    previewThumb.src = data.thumbnail || "";
+    previewTitle.textContent = data.title || "";
+    previewMeta.textContent = [data.uploader, formatDuration(data.duration)]
+      .filter(Boolean)
+      .join(" · ");
+
+    previewLoading.classList.add("hidden");
+    preview.classList.remove("hidden");
+  } catch (err) {
+    if (requestId === previewRequestId) hidePreview();
+  }
+}
+
+urlInput.addEventListener("input", () => {
+  clearTimeout(previewTimer);
+  const url = urlInput.value.trim();
+
+  if (!URL_RE.test(url)) {
+    previewRequestId++;
+    hidePreview();
+    return;
+  }
+
+  previewTimer = setTimeout(() => fetchPreview(url), 600);
+});
 
 // ---------- Download flow ----------
 
