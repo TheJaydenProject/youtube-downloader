@@ -1,5 +1,56 @@
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function buildPaths(svg, position) {
+  for (let i = 0; i < 36; i++) {
+    const d =
+      `M-${380 - i * 5 * position} -${189 + i * 6}` +
+      `C-${380 - i * 5 * position} -${189 + i * 6} ` +
+      `-${312 - i * 5 * position} ${216 - i * 6} ` +
+      `${152 - i * 5 * position} ${343 - i * 6}` +
+      `C${616 - i * 5 * position} ${470 - i * 6} ` +
+      `${684 - i * 5 * position} ${875 - i * 6} ` +
+      `${684 - i * 5 * position} ${875 - i * 6}`;
+
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("class", "flow-path");
+    path.setAttribute("stroke-width", String(0.5 + i * 0.03));
+    path.setAttribute("stroke-opacity", String(0.1 + i * 0.03));
+    path.style.animationDuration = `${20 + Math.random() * 10}s`;
+    path.style.animationDelay = `-${Math.random() * 30}s`;
+    svg.appendChild(path);
+  }
+}
+
+buildPaths(document.getElementById("paths-1"), 1);
+buildPaths(document.getElementById("paths-2"), -1);
+
+function buildTitle(text) {
+  const titleEl = document.getElementById("title");
+  let letterIndex = 0;
+
+  text.split(" ").forEach((word) => {
+    const wordEl = document.createElement("span");
+    wordEl.className = "word";
+
+    word.split("").forEach((char) => {
+      const letterEl = document.createElement("span");
+      letterEl.className = "letter";
+      letterEl.textContent = char;
+      letterEl.style.animationDelay = `${letterIndex * 0.03}s`;
+      wordEl.appendChild(letterEl);
+      letterIndex++;
+    });
+
+    titleEl.appendChild(wordEl);
+  });
+}
+
+buildTitle("Video Downloader");
+
 const form = document.getElementById("download-form");
 const urlInput = document.getElementById("url-input");
+const folderInput = document.getElementById("folder-input");
 const progressContainer = document.getElementById("progress-container");
 const progressFill = document.getElementById("progress-fill");
 const statusText = document.getElementById("status-text");
@@ -14,6 +65,7 @@ form.addEventListener("submit", async (e) => {
   reset();
 
   const url = urlInput.value.trim();
+  const folder = folderInput.value.trim();
   progressContainer.classList.remove("hidden");
   statusText.textContent = "Starting...";
 
@@ -21,7 +73,7 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch("/api/download", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, folder }),
     });
     const data = await res.json();
 

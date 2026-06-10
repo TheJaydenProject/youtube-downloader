@@ -4,6 +4,7 @@ import threading
 import uuid
 
 from flask import Flask, abort, jsonify, render_template, request, send_from_directory
+from werkzeug.utils import secure_filename
 import yt_dlp
 
 app = Flask(__name__)
@@ -16,8 +17,25 @@ URL_RE = re.compile(r"^https?://", re.IGNORECASE)
 jobs = {}
 
 
-def run_download(job_id, url):
+def sanitize_subfolder(raw):
+    """Turn user input into a safe relative path under DOWNLOAD_DIR (no traversal)."""
+    if not raw:
+        return ""
+    parts = []
+    for part in raw.replace("\\", "/").split("/"):
+        part = part.strip()
+        if not part or part in (".", ".."):
+            continue
+        safe = secure_filename(part)
+        if safe:
+            parts.append(safe)
+    return os.path.join(*parts) if parts else ""
+
+
+def run_download(job_id, url, subfolder):
     job = jobs[job_id]
+    target_dir = os.path.join(DOWNLOAD_DIR, subfolder) if subfolder else DOWNLOAD_DIR
+    os.makedirs(target_dir, exist_ok=True)
 
     def progress_hook(d):
         if d["status"] == "downloading":
@@ -32,13 +50,13 @@ def run_download(job_id, url):
 
     def postprocessor_hook(d):
         if d["status"] == "finished":
-            job["filename"] = os.path.basename(d["info_dict"]["filepath"])
+            job["filename"] = os.path.relpath(d["info_dict"]["filepath"], DOWNLOAD_DIR)
 
     ydl_opts = {
         "format": "bv*[ext=mp4][vcodec^=avc1]+ba[ext=m4a]/b[ext=mp4]",
         "merge_output_format": "mp4",
         "restrictfilenames": True,
-        "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).120s.%(ext)s"),
+        "outtmpl": os.path.join(target_dir, "%(title).120s.%(ext)s"),
         "noplaylist": True,
         "progress_hooks": [progress_hook],
         "postprocessor_hooks": [postprocessor_hook],
@@ -50,7 +68,7 @@ def run_download(job_id, url):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             if "filename" not in job:
-                job["filename"] = os.path.basename(ydl.prepare_filename(info))
+                job["filename"] = os.path.relpath(ydl.prepare_filename(info), DOWNLOAD_DIR)
             job["status"] = "finished"
             job["progress"] = 100
     except Exception as e:
@@ -67,6 +85,7 @@ def index():
 def start_download():
     data = request.get_json(force=True, silent=True) or {}
     url = (data.get("url") or "").strip()
+    subfolder = sanitize_subfolder((data.get("folder") or "").strip())
 
     if not url or not URL_RE.match(url):
         return jsonify({"error": "Please enter a valid http(s) URL"}), 400
@@ -74,7 +93,7 @@ def start_download():
     job_id = uuid.uuid4().hex
     jobs[job_id] = {"status": "starting", "progress": 0}
 
-    thread = threading.Thread(target=run_download, args=(job_id, url), daemon=True)
+    thread = threading.Thread(target=run_download, args=(job_id, url, subfolder), daemon=True)
     thread.start()
 
     return jsonify({"job_id": job_id})

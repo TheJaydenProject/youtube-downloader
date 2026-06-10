@@ -7,27 +7,39 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <main class="card">
-    <h1>🎬 Video Downloader</h1>
-    <p class="subtitle">Paste a video link below and click Download</p>
+  <div class="background-paths" aria-hidden="true">
+    <svg class="paths-layer" id="paths-1" viewBox="0 0 696 316" preserveAspectRatio="none"></svg>
+    <svg class="paths-layer" id="paths-2" viewBox="0 0 696 316" preserveAspectRatio="none"></svg>
+  </div>
 
-    <form id="download-form">
-      <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." required>
-      <button type="submit">Download</button>
-    </form>
+  <main class="content">
+    <h1 class="title" id="title"></h1>
 
-    <div id="progress-container" class="hidden">
-      <div class="progress-bar">
-        <div id="progress-fill" class="progress-fill"></div>
+    <div class="card">
+      <div class="card-inner">
+        <form id="download-form">
+          <input type="url" id="url-input" placeholder="Paste a video link..." required>
+          <input type="text" id="folder-input" placeholder="Save to folder (optional)">
+          <button type="submit">
+            <span>Download</span>
+            <span class="arrow">→</span>
+          </button>
+        </form>
+
+        <div id="progress-container" class="hidden">
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <p id="status-text">Starting...</p>
+        </div>
+
+        <div id="result" class="hidden">
+          <a id="download-link" class="download-btn" href="#">⬇️ Save File</a>
+        </div>
+
+        <div id="error" class="hidden error-msg"></div>
       </div>
-      <p id="status-text">Starting...</p>
     </div>
-
-    <div id="result" class="hidden">
-      <a id="download-link" class="download-btn" href="#">⬇️ Save File</a>
-    </div>
-
-    <div id="error" class="hidden error-msg"></div>
   </main>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>

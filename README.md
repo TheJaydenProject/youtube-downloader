@@ -13,9 +13,11 @@ A small, self-contained Docker setup for downloading videos with [yt-dlp](https:
 ## ✨ Features
 
 - 🌐 **Web GUI** — paste a link, click Download, watch a progress bar, save the file. No coding required.
+- 🚀 **One-click launch** — `start.bat` (Windows) / `start.sh` (Mac/Linux) builds, starts, and opens the app in your browser automatically
+- 📂 **Custom save folders** — optionally enter a folder name in the UI to organize downloads into subfolders
 - 🐳 **Fully containerized** — `yt-dlp` and `ffmpeg` run inside Docker, your host stays clean
 - 🎞️ **MP4 output** — automatically merges best video (H.264/AVC) + audio (M4A) into MP4
-- 📁 **Downloads to a local folder** — files land directly in your current directory via a volume mount
+- 📁 **Downloads to a local folder** — files land directly in this project's `downloads/` folder via a volume mount
 - 🔤 **Filename-safe** — `--restrict-filenames` avoids spaces and special characters
 - ⚙️ **Easy to customize** — tweak the format selector or output template as needed
 
@@ -31,17 +33,29 @@ A small, self-contained Docker setup for downloading videos with [yt-dlp](https:
 
 The easiest way to use this — no command line knowledge needed after setup.
 
-1. From the project root, start the app:
+### Option A: One-click start
 
-   ```bash
-   docker compose up --build
-   ```
+- **Windows:** double-click `start.bat`
+- **Mac/Linux:** run `./start.sh`
 
-2. Open **http://localhost:5000** in your browser.
-3. Paste a video link, click **Download**, and wait for the progress bar to finish.
+This builds the image (first time only), starts the app, and automatically opens **http://localhost:5000** in your default browser once it's ready.
+
+### Option B: Manual start
+
+```bash
+docker compose up --build
+```
+
+Then open **http://localhost:5000** in your browser.
+
+### Using the app
+
+1. Paste a video link into the box.
+2. *(Optional)* Enter a folder name to organize this download (e.g. `movies`, `music`) — it'll be saved into `downloads/<folder name>/`.
+3. Click **Download** and wait for the progress bar to finish.
 4. Click **Save File** to download it to your computer.
 
-Files are also saved to the `downloads/` folder in this project while the container is running. Stop the app with `Ctrl+C`, or run it in the background with `docker compose up -d --build`.
+Files are saved to the `downloads/` folder in this project while the container is running. Stop the app with `Ctrl+C` (or `docker compose down` if started in the background).
 
 ---
 
