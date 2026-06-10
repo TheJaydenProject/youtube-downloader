@@ -6,12 +6,13 @@
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)
 ![License](https://img.shields.io/badge/License-Unlicense-blue?style=for-the-badge)
 
-A small, self-contained Docker setup for downloading videos with [yt-dlp](https://github.com/yt-dlp/yt-dlp). Build the image once, then run a single command to grab MP4s into a local folder — no Python environment or dependencies to manage on your host machine.
+A small, self-contained Docker setup for downloading videos with [yt-dlp](https://github.com/yt-dlp/yt-dlp) — either through a **point-and-click web UI** (just paste a link) or the command line. No Python environment or dependencies to manage on your host machine.
 
 ---
 
 ## ✨ Features
 
+- 🌐 **Web GUI** — paste a link, click Download, watch a progress bar, save the file. No coding required.
 - 🐳 **Fully containerized** — `yt-dlp` and `ffmpeg` run inside Docker, your host stays clean
 - 🎞️ **MP4 output** — automatically merges best video (H.264/AVC) + audio (M4A) into MP4
 - 📁 **Downloads to a local folder** — files land directly in your current directory via a volume mount
@@ -22,11 +23,33 @@ A small, self-contained Docker setup for downloading videos with [yt-dlp](https:
 
 ## 📋 Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) installed and running
+- [Docker](https://docs.docker.com/get-docker/) installed and running (Docker Compose included for the web UI)
 
 ---
 
-## 🚀 Build the image
+## 🌐 Web GUI (recommended)
+
+The easiest way to use this — no command line knowledge needed after setup.
+
+1. From the project root, start the app:
+
+   ```bash
+   docker compose up --build
+   ```
+
+2. Open **http://localhost:5000** in your browser.
+3. Paste a video link, click **Download**, and wait for the progress bar to finish.
+4. Click **Save File** to download it to your computer.
+
+Files are also saved to the `downloads/` folder in this project while the container is running. Stop the app with `Ctrl+C`, or run it in the background with `docker compose up -d --build`.
+
+---
+
+## ⌨️ Command-line usage
+
+For advanced/scripted use, build and run the CLI image directly.
+
+### Build the image
 
 From the project root:
 
@@ -36,9 +59,7 @@ docker build -t yt-dlp:local .
 
 Rebuild with the same command any time you want to update `yt-dlp` to the latest version (the build re-pulls it from PyPI).
 
----
-
-## ▶️ Usage
+### Run
 
 Run from the directory where you want the downloaded file to be saved:
 
@@ -69,6 +90,12 @@ Replace `"yt-link"` with the URL of the video you want to download.
 - **Playlist support:** pass a playlist URL — yt-dlp downloads every entry by default.
 
 See the [yt-dlp documentation](https://github.com/yt-dlp/yt-dlp#readme) for the full list of options.
+
+---
+
+## ⚠️ Security note
+
+The web GUI lets anyone who can reach it trigger downloads from arbitrary URLs. It's intended for **local/trusted-network use only** — don't expose port 5000 directly to the internet without adding authentication.
 
 ---
 

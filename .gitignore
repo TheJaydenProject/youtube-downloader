@@ -21,3 +21,6 @@
 .DS_Store
 .vscode
 .idea
+
+# Web GUI download folder
+/downloads/
