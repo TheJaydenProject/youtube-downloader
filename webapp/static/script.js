@@ -1,56 +1,5 @@
-const SVG_NS = "http://www.w3.org/2000/svg";
-
-function buildPaths(svg, position) {
-  for (let i = 0; i < 36; i++) {
-    const d =
-      `M-${380 - i * 5 * position} -${189 + i * 6}` +
-      `C-${380 - i * 5 * position} -${189 + i * 6} ` +
-      `-${312 - i * 5 * position} ${216 - i * 6} ` +
-      `${152 - i * 5 * position} ${343 - i * 6}` +
-      `C${616 - i * 5 * position} ${470 - i * 6} ` +
-      `${684 - i * 5 * position} ${875 - i * 6} ` +
-      `${684 - i * 5 * position} ${875 - i * 6}`;
-
-    const path = document.createElementNS(SVG_NS, "path");
-    path.setAttribute("d", d);
-    path.setAttribute("class", "flow-path");
-    path.setAttribute("stroke-width", String(0.5 + i * 0.03));
-    path.setAttribute("stroke-opacity", String(0.1 + i * 0.03));
-    path.style.animationDuration = `${20 + Math.random() * 10}s`;
-    path.style.animationDelay = `-${Math.random() * 30}s`;
-    svg.appendChild(path);
-  }
-}
-
-buildPaths(document.getElementById("paths-1"), 1);
-buildPaths(document.getElementById("paths-2"), -1);
-
-function buildTitle(text) {
-  const titleEl = document.getElementById("title");
-  let letterIndex = 0;
-
-  text.split(" ").forEach((word) => {
-    const wordEl = document.createElement("span");
-    wordEl.className = "word";
-
-    word.split("").forEach((char) => {
-      const letterEl = document.createElement("span");
-      letterEl.className = "letter";
-      letterEl.textContent = char;
-      letterEl.style.animationDelay = `${letterIndex * 0.03}s`;
-      wordEl.appendChild(letterEl);
-      letterIndex++;
-    });
-
-    titleEl.appendChild(wordEl);
-  });
-}
-
-buildTitle("Video Downloader");
-
 const form = document.getElementById("download-form");
 const urlInput = document.getElementById("url-input");
-const folderInput = document.getElementById("folder-input");
 const progressContainer = document.getElementById("progress-container");
 const progressFill = document.getElementById("progress-fill");
 const statusText = document.getElementById("status-text");
@@ -58,14 +7,83 @@ const result = document.getElementById("result");
 const downloadLink = document.getElementById("download-link");
 const errorBox = document.getElementById("error");
 
+const folderBtn = document.getElementById("folder-btn");
+const folderLabel = document.getElementById("folder-label");
+const folderMenu = document.getElementById("folder-menu");
+const folderList = document.getElementById("folder-list");
+const newFolderInput = document.getElementById("new-folder-input");
+const newFolderBtn = document.getElementById("new-folder-btn");
+
+let selectedFolder = "";
 let pollTimer = null;
+
+// ---------- Folder picker ----------
+
+function renderFolderOption(folder) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "folder-option";
+  btn.dataset.folder = folder;
+  btn.textContent = `📁 ${folder}`;
+  btn.addEventListener("click", () => selectFolder(folder));
+  folderList.appendChild(btn);
+}
+
+function selectFolder(folder) {
+  selectedFolder = folder;
+  folderLabel.textContent = folder ? folder : "Default (downloads)";
+  folderMenu.classList.add("hidden");
+}
+
+async function loadFolders() {
+  try {
+    const res = await fetch("/api/folders");
+    const folders = await res.json();
+    folderList.innerHTML = "";
+    folders.forEach(renderFolderOption);
+  } catch (err) {
+    // Folder list is best-effort; ignore failures.
+  }
+}
+
+folderBtn.addEventListener("click", () => {
+  folderMenu.classList.toggle("hidden");
+});
+
+document.querySelector('.folder-option[data-folder=""]').addEventListener("click", () => {
+  selectFolder("");
+});
+
+newFolderBtn.addEventListener("click", () => {
+  const name = newFolderInput.value.trim();
+  if (!name) return;
+  renderFolderOption(name);
+  selectFolder(name);
+  newFolderInput.value = "";
+});
+
+newFolderInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    newFolderBtn.click();
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!folderBtn.contains(e.target) && !folderMenu.contains(e.target)) {
+    folderMenu.classList.add("hidden");
+  }
+});
+
+loadFolders();
+
+// ---------- Download flow ----------
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   reset();
 
   const url = urlInput.value.trim();
-  const folder = folderInput.value.trim();
   progressContainer.classList.remove("hidden");
   statusText.textContent = "Starting...";
 
@@ -73,7 +91,7 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch("/api/download", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, folder }),
+      body: JSON.stringify({ url, folder: selectedFolder }),
     });
     const data = await res.json();
 
@@ -104,6 +122,7 @@ async function poll(jobId) {
     statusText.textContent = "Done!";
     downloadLink.href = `/api/file/${jobId}`;
     result.classList.remove("hidden");
+    loadFolders();
   } else if (job.status === "error") {
     clearInterval(pollTimer);
     showError(job.error || "Download failed");

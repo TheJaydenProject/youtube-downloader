@@ -81,6 +81,16 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/api/folders")
+def list_folders():
+    folders = [
+        name
+        for name in sorted(os.listdir(DOWNLOAD_DIR))
+        if not name.startswith(".") and os.path.isdir(os.path.join(DOWNLOAD_DIR, name))
+    ]
+    return jsonify(folders)
+
+
 @app.route("/api/download", methods=["POST"])
 def start_download():
     data = request.get_json(force=True, silent=True) or {}
