@@ -84,7 +84,7 @@ def _run_tray(settings):
     def on_open(icon, item):
         webbrowser.open(URL)
 
-    def on_change_folder(icon, item):
+    def _handle_change_folder():
         chosen = _pick_folder()
         if not chosen:
             return
@@ -96,6 +96,12 @@ def _run_tray(settings):
         settings["download_dir"] = chosen
         _save_settings(settings)
         icon.notify(f"Downloads will now save to:\n{chosen}", "Video Downloader")
+
+    def on_change_folder(icon, item):
+        # tkinter's dialog needs its own thread -- running it directly on pystray's
+        # Win32 message-loop thread makes the two GUI loops fight over the same
+        # thread, so the dialog appears but its buttons stop responding.
+        threading.Thread(target=_handle_change_folder, daemon=True).start()
 
     def on_quit(icon, item):
         icon.stop()
