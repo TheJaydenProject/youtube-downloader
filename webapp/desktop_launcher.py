@@ -129,7 +129,7 @@ def main():
         return
 
     settings = _load_settings()
-    download_dir = settings.get("download_dir") or str(Path.home() / "Downloads")
+    download_dir = settings.get("download_dir") or str(Path.home() / "Videos" / "VideoDownloader")
     os.environ.setdefault("YTDL_DOWNLOAD_DIR", download_dir)
     os.environ.setdefault("YTDL_PORT", str(PORT))
 

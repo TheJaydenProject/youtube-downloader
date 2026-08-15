@@ -52,7 +52,7 @@ No Docker, no Python, nothing to install — just one file.
 2. Put it anywhere (e.g. your Desktop) and double-click it.
 3. Your browser opens automatically at **http://127.0.0.1:7001**.
 
-By default, videos are saved to your Windows **Downloads** folder. The app bundles its own copy of ffmpeg, so nothing extra is needed.
+By default, videos are saved to a `VideoDownloader` folder inside your Windows **Videos** library — the same convention other video downloader apps use, so files aren't at risk if you clean out your Downloads folder. The app bundles its own copy of ffmpeg, so nothing extra is needed.
 
 The app keeps running in the background after you close the browser tab — it lives in the system tray (the icon area near your clock). Right-click the tray icon for:
 
@@ -77,7 +77,7 @@ If you launch the `.exe` again while it's already running, it just reopens the b
 ## File storage
 
 - **Docker (Option A) and the command-line image** save videos to the `downloads/` folder inside this project.
-- **The standalone app (Option B)** saves videos to your Windows **Downloads** folder by default, unless you've changed it via the tray icon's **Change download folder...** option.
+- **The standalone app (Option B)** saves videos to `Videos\VideoDownloader\` by default, unless you've changed it via the tray icon's **Change download folder...** option.
 
 ---
 
