@@ -52,9 +52,15 @@ No Docker, no Python, nothing to install — just one file.
 2. Put it anywhere (e.g. your Desktop) and double-click it.
 3. Your browser opens automatically at **http://127.0.0.1:7001**.
 
-A `downloads` folder is created next to the `.exe` the first time you run it — that's where your files go. The app bundles its own copy of ffmpeg, so nothing extra is needed.
+By default, videos are saved to your Windows **Downloads** folder. The app bundles its own copy of ffmpeg, so nothing extra is needed.
 
-The app keeps running in the background after you close the browser tab — if you launch the `.exe` again, it just reopens the browser instead of starting a second copy. To fully quit, close it from Task Manager.
+The app keeps running in the background after you close the browser tab — it lives in the system tray (the icon area near your clock). Right-click the tray icon for:
+
+- **Open** — reopens the browser tab (also the default double-click action)
+- **Change download folder...** — pick a different folder for future downloads; takes effect immediately, no restart needed, and is remembered next time you launch the app
+- **Quit** — fully closes the app
+
+If you launch the `.exe` again while it's already running, it just reopens the browser instead of starting a second copy.
 
 ---
 
@@ -71,7 +77,7 @@ The app keeps running in the background after you close the browser tab — if y
 ## File storage
 
 - **Docker (Option A) and the command-line image** save videos to the `downloads/` folder inside this project.
-- **The standalone app (Option B)** saves videos to a `downloads` folder next to wherever you put the `.exe`.
+- **The standalone app (Option B)** saves videos to your Windows **Downloads** folder by default, unless you've changed it via the tray icon's **Change download folder...** option.
 
 ---
 
@@ -85,7 +91,7 @@ docker compose down
 
 This stops the containers. Downloaded files remain in the `downloads/` folder.
 
-**Standalone app (Option B):** close it from Task Manager (there's no separate stop command — see [Option B](#option-b-standalone-windows-app-no-install)).
+**Standalone app (Option B):** right-click the tray icon and choose **Quit**.
 
 ---
 

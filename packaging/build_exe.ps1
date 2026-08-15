@@ -48,7 +48,9 @@ try {
         --icon "$iconFile" `
         --add-data "$templatesDir;templates" `
         --add-data "$staticDir;static" `
+        --add-data "$iconFile;packaging" `
         --add-binary "$ffmpegExe;ffmpeg" `
+        --hidden-import "pystray._win32" `
         --distpath dist `
         --workpath build\pyi-work `
         --specpath build `
