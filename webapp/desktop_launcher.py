@@ -104,7 +104,14 @@ def _run_tray(settings):
         threading.Thread(target=_handle_change_folder, daemon=True).start()
 
     def on_quit(icon, item):
-        icon.stop()
+        # Hard-exit rather than relying on icon.stop() unwinding cleanly: this
+        # guarantees the server, any open folder-picker dialog, and the tray
+        # icon are all gone immediately, regardless of what else is running.
+        try:
+            icon.visible = False
+        except Exception:
+            pass
+        os._exit(0)
 
     menu = pystray.Menu(
         pystray.MenuItem("Open", on_open, default=True),
