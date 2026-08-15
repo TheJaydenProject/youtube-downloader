@@ -26,6 +26,23 @@
           Add another link
         </button>
 
+        <span class="field-label">Format</span>
+        <div class="select-wrap">
+          <select id="format-select" name="format">
+            <optgroup label="Video">
+              <option value="mp4" selected>MP4 &middot; best quality</option>
+              <option value="webm">WebM</option>
+              <option value="mkv">MKV</option>
+            </optgroup>
+            <optgroup label="Audio only">
+              <option value="mp3">MP3</option>
+              <option value="wav">WAV</option>
+              <option value="m4a">M4A / AAC</option>
+            </optgroup>
+          </select>
+          <svg class="icon select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+
         <button type="submit" class="primary-btn">
           <span class="rec-dot" aria-hidden="true"></span>
           Download

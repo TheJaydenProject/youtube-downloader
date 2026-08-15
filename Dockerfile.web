@@ -15,6 +15,6 @@ COPY webapp/ .
 
 RUN mkdir -p /downloads
 
-EXPOSE 5000
+EXPOSE 7001
 
 CMD ["python", "app.py"]

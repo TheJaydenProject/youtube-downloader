@@ -2,7 +2,7 @@
   /* Surfaces — a screening room at night. Elevation rises with lightness. */
   --surface-inset: #07070a;  /* wells: inputs, the progress trough */
   --surface-0: #0c0c0f;      /* canvas: the room itself */
-  --surface-1: #18181c;      /* card: lit by the projector beam */
+  --surface-1: #28283a;      /* card: lit by the projector beam */
 
   /* Borders — low-opacity warm gray, a progression by importance */
   --border-subtle: rgba(243, 237, 226, 0.05);
@@ -56,7 +56,7 @@ body {
   justify-content: center;
   font-family: var(--font-display);
   background:
-    radial-gradient(ellipse 640px 420px at 50% -8%, rgba(243, 237, 226, 0.05), transparent 70%),
+    radial-gradient(ellipse 820px 620px at 50% 42%, rgba(243, 237, 226, 0.09), transparent 68%),
     var(--surface-0);
   color: var(--text-primary);
   padding: var(--space-5);
@@ -64,7 +64,7 @@ body {
 
 .page {
   width: 100%;
-  max-width: 460px;
+  max-width: min(540px, 94vw);
 }
 
 /* ---------- Masthead ---------- */
@@ -88,14 +88,14 @@ body {
 
 h1 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: clamp(1.3rem, 1.1rem + 0.9vw, 1.55rem);
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .subtitle {
   margin: 2px 0 0;
-  font-size: 0.85rem;
+  font-size: clamp(0.85rem, 0.8rem + 0.2vw, 0.95rem);
   color: var(--text-tertiary);
 }
 
@@ -103,9 +103,9 @@ h1 {
 
 .card {
   background: var(--surface-1);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-emphasis);
   border-radius: var(--radius-md);
-  padding: var(--space-5);
+  padding: clamp(20px, 4vw + 8px, 32px);
 }
 
 .field-label {
@@ -128,13 +128,13 @@ h1 {
 input[type="url"],
 input[type="text"] {
   width: 100%;
-  padding: 10px var(--space-3);
+  padding: 12px var(--space-4);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
   background: var(--surface-inset);
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 1rem;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -147,6 +147,43 @@ input[type="url"]:focus,
 input[type="text"]:focus {
   border-color: var(--tally);
   box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* ---------- Select ---------- */
+
+.select-wrap {
+  position: relative;
+}
+
+select {
+  width: 100%;
+  padding: 12px 36px 12px var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: dark;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+select:focus {
+  border-color: var(--tally);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.select-chevron {
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
 }
 
 /* ---------- URL rows ---------- */
@@ -167,8 +204,8 @@ input[type="text"]:focus {
 
 .remove-row-btn {
   flex-shrink: 0;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,7 +326,7 @@ input[type="text"]:focus {
 .primary-btn {
   width: 100%;
   margin-top: var(--space-5);
-  padding: 12px var(--space-4);
+  padding: 14px var(--space-4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,7 +335,7 @@ input[type="text"]:focus {
   border-radius: var(--radius-sm);
   background: var(--tally);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -522,4 +559,17 @@ button:focus-visible {
 
 .hidden {
   display: none !important;
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 380px) {
+  body {
+    padding: var(--space-3);
+  }
+
+  .remove-row-btn {
+    width: 40px;
+    height: 40px;
+  }
 }

@@ -23,6 +23,19 @@
 *.sbv
 
 # ===================================
+# Standalone .exe build artifacts
+# ===================================
+/build/
+/dist/
+__pycache__/
+*.pyc
+
+# ===================================
+# Personal taskbar shortcut (hardcodes a local machine path)
+# ===================================
+*.lnk
+
+# ===================================
 # Editor / OS clutter files
 # ===================================
 .vscode/

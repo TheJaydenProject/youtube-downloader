@@ -6,9 +6,12 @@
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)
 ![License](https://img.shields.io/badge/License-Unlicense-blue?style=for-the-badge)
 
-A self-contained Docker setup for downloading videos with [yt-dlp](https://github.com/yt-dlp/yt-dlp), with a web interface for pasting a link and downloading, or a command-line option for advanced use.
+A web interface for downloading videos with [yt-dlp](https://github.com/yt-dlp/yt-dlp) — paste a link and download, no command line required. Two ways to run it:
 
-Everything (Python, yt-dlp, ffmpeg) runs inside Docker, so nothing needs to be installed on your computer besides Docker itself.
+- **Option A: Docker** — works on any OS, everything (Python, yt-dlp, ffmpeg) runs inside a container, nothing to install besides Docker itself.
+- **Option B: standalone Windows app** — a single `.exe`, no install, no Docker required.
+
+A command-line option is also available for advanced use.
 
 ---
 
@@ -22,22 +25,36 @@ Everything (Python, yt-dlp, ffmpeg) runs inside Docker, so nothing needs to be i
 
 ---
 
-## Requirements
+## Option A: Docker (all platforms)
+
+### Requirements
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/), installed and running
 
----
-
-## Getting started
+### Getting started
 
 1. Clone or download this repository.
 2. Make sure Docker Desktop is running.
 3. Start the app:
    - **Windows:** double-click `start.bat`
    - **macOS/Linux:** run `./start.sh`
-4. The app opens automatically at **http://localhost:5000**. If it doesn't, open that address in your browser manually.
+4. The app opens automatically at **http://localhost:7001**. If it doesn't, open that address in your browser manually.
 
 The first run takes a little longer, since Docker needs to build the image. Subsequent runs start quickly.
+
+---
+
+## Option B: Standalone Windows app (no install)
+
+No Docker, no Python, nothing to install — just one file.
+
+1. Download `VideoDownloader.exe` from the [Releases page](../../releases).
+2. Put it anywhere (e.g. your Desktop) and double-click it.
+3. Your browser opens automatically at **http://127.0.0.1:7001**.
+
+A `downloads` folder is created next to the `.exe` the first time you run it — that's where your files go. The app bundles its own copy of ffmpeg, so nothing extra is needed.
+
+The app keeps running in the background after you close the browser tab — if you launch the `.exe` again, it just reopens the browser instead of starting a second copy. To fully quit, close it from Task Manager.
 
 ---
 
@@ -53,11 +70,14 @@ The first run takes a little longer, since Docker needs to build the image. Subs
 
 ## File storage
 
-Both the web interface and the command-line image save videos to the `downloads/` folder inside this project.
+- **Docker (Option A) and the command-line image** save videos to the `downloads/` folder inside this project.
+- **The standalone app (Option B)** saves videos to a `downloads` folder next to wherever you put the `.exe`.
 
 ---
 
 ## Stopping the app
+
+**Docker (Option A):**
 
 ```bash
 docker compose down
@@ -65,11 +85,13 @@ docker compose down
 
 This stops the containers. Downloaded files remain in the `downloads/` folder.
 
+**Standalone app (Option B):** close it from Task Manager (there's no separate stop command — see [Option B](#option-b-standalone-windows-app-no-install)).
+
 ---
 
 ## Security
 
-The web interface allows anyone who can reach it to trigger downloads. It is intended for local or trusted-network use only — do not expose port `5000` to the internet without adding authentication.
+The web interface allows anyone who can reach it to trigger downloads. It is intended for local or trusted-network use only — do not expose port `7001` to the internet without adding authentication. This applies to both the Docker and standalone app options.
 
 ---
 

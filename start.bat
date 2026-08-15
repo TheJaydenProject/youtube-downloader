@@ -12,11 +12,11 @@ if errorlevel 1 (
 echo Waiting for the app to become ready...
 
 :wait
-curl -s -o nul http://localhost:5000
+curl -s -o nul http://localhost:7001
 if errorlevel 1 (
     timeout /t 1 /nobreak >nul
     goto wait
 )
 
-start "" http://localhost:5000
-echo Done! Opening http://localhost:5000 in your browser.
+start "" http://localhost:7001
+echo Done! Opening http://localhost:7001 in your browser.

@@ -1,24 +1,69 @@
 import os
 import queue
 import re
+import sys
 import threading
 import uuid
 
 from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 import yt_dlp
 
-app = Flask(__name__)
 
-DOWNLOAD_DIR = "/downloads"
+def _resource_dir(*parts):
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, *parts)
+
+
+def _ffmpeg_location():
+    if getattr(sys, "frozen", False):
+        candidate = os.path.join(sys._MEIPASS, "ffmpeg", "ffmpeg.exe")
+        if os.path.exists(candidate):
+            return candidate
+    return None
+
+
+app = Flask(__name__, template_folder=_resource_dir("templates"), static_folder=_resource_dir("static"))
+
+FFMPEG_LOCATION = _ffmpeg_location()
+
+DOWNLOAD_DIR = os.environ.get("YTDL_DOWNLOAD_DIR", "/downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 URL_RE = re.compile(r"^https?://", re.IGNORECASE)
+
+FORMAT_PRESETS = {
+    "mp4": {
+        "format": "bv*[ext=mp4][vcodec^=avc1]+ba[ext=m4a]/b[ext=mp4]",
+        "merge_output_format": "mp4",
+    },
+    "webm": {
+        "format": "bv*[ext=webm]+ba[ext=webm]/b[ext=webm]/bv*+ba/b",
+        "merge_output_format": "webm",
+    },
+    "mkv": {
+        "format": "bv*+ba/b",
+        "merge_output_format": "mkv",
+    },
+    "mp3": {
+        "format": "bestaudio/best",
+        "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}],
+    },
+    "wav": {
+        "format": "bestaudio/best",
+        "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "wav"}],
+    },
+    "m4a": {
+        "format": "bestaudio/best",
+        "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "m4a"}],
+    },
+}
+DEFAULT_FORMAT = "mp4"
 
 jobs = {}
 job_queue = queue.Queue()
 
 
-def run_download(job_id, url):
+def run_download(job_id, url, fmt):
     job = jobs[job_id]
     job["status"] = "starting"
 
@@ -38,8 +83,6 @@ def run_download(job_id, url):
             job["filename"] = os.path.relpath(d["info_dict"]["filepath"], DOWNLOAD_DIR)
 
     ydl_opts = {
-        "format": "bv*[ext=mp4][vcodec^=avc1]+ba[ext=m4a]/b[ext=mp4]",
-        "merge_output_format": "mp4",
         "restrictfilenames": True,
         "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).120s.%(ext)s"),
         "noplaylist": True,
@@ -47,7 +90,10 @@ def run_download(job_id, url):
         "postprocessor_hooks": [postprocessor_hook],
         "quiet": True,
         "no_warnings": True,
+        **FORMAT_PRESETS[fmt],
     }
+    if FFMPEG_LOCATION:
+        ydl_opts["ffmpeg_location"] = FFMPEG_LOCATION
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -64,8 +110,8 @@ def run_download(job_id, url):
 
 def worker():
     while True:
-        job_id, url = job_queue.get()
-        run_download(job_id, url)
+        job_id, url, fmt = job_queue.get()
+        run_download(job_id, url, fmt)
         job_queue.task_done()
 
 
@@ -110,6 +156,7 @@ def preview():
 def start_download():
     data = request.get_json(force=True, silent=True) or {}
     urls = data.get("urls")
+    fmt = data.get("format", DEFAULT_FORMAT)
 
     if not isinstance(urls, list):
         return jsonify({"error": "Please provide a list of URLs"}), 400
@@ -122,11 +169,14 @@ def start_download():
     if any(not URL_RE.match(u) for u in urls):
         return jsonify({"error": "Please enter valid http(s) URLs"}), 400
 
+    if fmt not in FORMAT_PRESETS:
+        return jsonify({"error": "Please choose a valid format"}), 400
+
     job_ids = []
     for url in urls:
         job_id = uuid.uuid4().hex
         jobs[job_id] = {"status": "queued", "progress": 0}
-        job_queue.put((job_id, url))
+        job_queue.put((job_id, url, fmt))
         job_ids.append(job_id)
 
     return jsonify({"job_ids": job_ids})
@@ -149,4 +199,5 @@ def file(job_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, threaded=True)
+    port = int(os.environ.get("YTDL_PORT", "7001"))
+    app.run(host="0.0.0.0", port=port, threaded=True)

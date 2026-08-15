@@ -13,6 +13,7 @@ const result = document.getElementById("result");
 const anotherBtn = document.getElementById("another-btn");
 const errorBox = document.getElementById("error");
 const errorText = document.getElementById("error-text");
+const formatSelect = document.getElementById("format-select");
 
 const URL_RE = /^https?:\/\//i;
 const CHECK_ICON = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/>';
@@ -159,7 +160,10 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch("/api/download", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls: entries.map((entry) => entry.url) }),
+      body: JSON.stringify({
+        urls: entries.map((entry) => entry.url),
+        format: formatSelect.value,
+      }),
     });
     const data = await res.json();
 

@@ -4,6 +4,6 @@ services:
       context: .
       dockerfile: Dockerfile.web
     ports:
-      - "5000:5000"
+      - "7001:7001"
     volumes:
       - ./downloads:/downloads
