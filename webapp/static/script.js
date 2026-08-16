@@ -6,6 +6,7 @@ const queueItemTemplate = document.getElementById("queue-item-template");
 const progressContainer = document.getElementById("progress-container");
 const queuePosition = document.getElementById("queue-position");
 const currentTitle = document.getElementById("current-title");
+const progressBar = document.querySelector(".progress-bar");
 const progressFill = document.getElementById("progress-fill");
 const statusText = document.getElementById("status-text");
 const completedList = document.getElementById("completed-list");
@@ -154,7 +155,8 @@ form.addEventListener("submit", async (e) => {
 
   form.classList.add("hidden");
   progressContainer.classList.remove("hidden");
-  statusText.textContent = "Starting";
+  progressBar.classList.add("skeleton");
+  statusText.textContent = "Fetching video info — this can take a moment";
 
   try {
     const res = await fetch("/api/download", {
@@ -186,7 +188,8 @@ async function runQueue(jobIds, entries) {
       jobIds.length > 1 ? `Item ${i + 1} of ${jobIds.length}` : "";
     currentTitle.textContent = entries[i].title || entries[i].url;
     progressFill.style.width = "0%";
-    statusText.textContent = "Starting";
+    progressBar.classList.add("skeleton");
+    statusText.textContent = "Fetching video info — this can take a moment";
 
     await new Promise((resolve) => {
       pollTimer = setInterval(() => poll(jobIds[i], resolve), 1000);
@@ -202,6 +205,7 @@ function poll(jobId, done) {
     .then((res) => res.json())
     .then((job) => {
       if (job.status === "downloading" || job.status === "processing") {
+        progressBar.classList.remove("skeleton");
         progressFill.style.width = `${job.progress || 0}%`;
         statusText.textContent =
           job.status === "downloading"
@@ -209,6 +213,7 @@ function poll(jobId, done) {
             : "Processing";
       } else if (job.status === "finished") {
         clearInterval(pollTimer);
+        progressBar.classList.remove("skeleton");
         progressFill.style.width = "100%";
         statusText.textContent = "Transfer complete";
         addCompletedItem(job.title || job.filename, "Saved", false);
@@ -224,6 +229,7 @@ function poll(jobId, done) {
         done();
       } else if (job.status === "error") {
         clearInterval(pollTimer);
+        progressBar.classList.remove("skeleton");
         addCompletedItem(job.error || "Download failed", "Failed", true);
         done();
       }
@@ -259,6 +265,7 @@ function reset() {
   completedList.innerHTML = "";
   result.classList.add("hidden");
   errorBox.classList.add("hidden");
+  progressBar.classList.remove("skeleton");
   progressFill.style.width = "0%";
   queuePosition.textContent = "";
   currentTitle.textContent = "";
